@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install)",
+      "Bash(pnpm --filter=@reviews360/api add fastify-plugin)",
+      "Bash(npx prisma generate)",
+      "Bash(npx prisma validate)",
+      "Bash(pnpm --filter=@reviews360/api db:generate)",
+      "Bash(pnpm --filter=@reviews360/api db:push)",
+      "Bash(/home/leonardo/www/personal/reviews_360/apps/api/.env.example:*)",
+      "Bash(pnpm --filter=@reviews360/api db:seed)",
+      "Bash(pnpm --filter=@reviews360/api lint)",
+      "Bash(pnpm --filter=@reviews360/web lint)",
+      "Bash(node --import tsx/esm apps/api/src/index.ts)",
+      "Bash(node_modules/.bin/tsx apps/api/src/index.ts)",
+      "Bash(pnpm --filter=@reviews360/api exec tsx apps/api/src/routes/auth.ts)"
+    ]
+  }
+}

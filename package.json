@@ -1,0 +1,24 @@
+{
+  "name": "reviews-360",
+  "private": true,
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:generate": "pnpm --filter=@reviews360/api db:generate",
+    "db:push": "pnpm --filter=@reviews360/api db:push",
+    "db:migrate": "pnpm --filter=@reviews360/api db:migrate",
+    "db:seed": "pnpm --filter=@reviews360/api db:seed",
+    "db:studio": "pnpm --filter=@reviews360/api db:studio"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.3"
+  },
+  "engines": {
+    "node": ">=18",
+    "pnpm": ">=8"
+  },
+  "packageManager": "pnpm@9.15.4"
+}

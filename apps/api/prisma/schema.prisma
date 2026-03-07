@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+/// role: "admin" | "manager" | "employee"
+model User {
+  id        String    @id @default(cuid())
+  name      String
+  email     String    @unique
+  password  String
+  role      String    @default("employee")
+  employee  Employee?
+  createdAt DateTime  @default(now())
+}
+
+model Employee {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  jobTitle  String
+  teamId    String?
+  team      Team?      @relation(fields: [teamId], references: [id])
+  managerId String?
+  manager   Employee?  @relation("Reports", fields: [managerId], references: [id])
+  reports   Employee[] @relation("Reports")
+
+  assignmentsAsReviewer ReviewAssignment[] @relation("Reviewer")
+  assignmentsAsReviewee ReviewAssignment[] @relation("Reviewee")
+  developmentPlans      DevelopmentPlan[]
+  managedPlans          DevelopmentPlan[]  @relation("PlanManager")
+}
+
+model Team {
+  id        String     @id @default(cuid())
+  name      String
+  employees Employee[]
+}
+
+model ReviewTemplate {
+  id        String            @id @default(cuid())
+  name      String
+  version   Int               @default(1)
+  isActive  Boolean           @default(true)
+  sections  TemplateSection[]
+  cycles    ReviewCycle[]
+  createdAt DateTime          @default(now())
+}
+
+model TemplateSection {
+  id         String             @id @default(cuid())
+  templateId String
+  template   ReviewTemplate     @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  title      String
+  order      Int
+  questions  TemplateQuestion[]
+}
+
+/// type: "rating" | "text" | "choice"
+model TemplateQuestion {
+  id        String          @id @default(cuid())
+  sectionId String
+  section   TemplateSection @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  type      String          @default("rating")
+  text      String
+  scaleMin  Int?
+  scaleMax  Int?
+  required  Boolean         @default(true)
+  order     Int
+}
+
+/// status: "draft" | "active" | "closed" | "published"
+model ReviewCycle {
+  id          String             @id @default(cuid())
+  name        String
+  templateId  String
+  template    ReviewTemplate     @relation(fields: [templateId], references: [id])
+  startAt     DateTime
+  endAt       DateTime
+  status      String             @default("draft")
+  configJson  String?
+  assignments ReviewAssignment[]
+  createdAt   DateTime           @default(now())
+}
+
+/// role: "self" | "manager" | "peer"
+/// status: "pending" | "in_progress" | "completed" | "overdue"
+model ReviewAssignment {
+  id                 String           @id @default(cuid())
+  cycleId            String
+  cycle              ReviewCycle      @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  reviewerEmployeeId String
+  reviewer           Employee         @relation("Reviewer", fields: [reviewerEmployeeId], references: [id])
+  revieweeEmployeeId String
+  reviewee           Employee         @relation("Reviewee", fields: [revieweeEmployeeId], references: [id])
+  role               String           @default("peer")
+  isAnonymous        Boolean          @default(false)
+  status             String           @default("pending")
+  dueAt              DateTime
+  response           ReviewResponse?
+}
+
+model ReviewResponse {
+  id             String           @id @default(cuid())
+  assignmentId   String           @unique
+  assignment     ReviewAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  submittedAt    DateTime?
+  overallComment String?
+  isDraft        Boolean          @default(true)
+  answers        ResponseAnswer[]
+}
+
+model ResponseAnswer {
+  id          String         @id @default(cuid())
+  responseId  String
+  response    ReviewResponse @relation(fields: [responseId], references: [id], onDelete: Cascade)
+  questionId  String
+  ratingValue Int?
+  textValue   String?
+}
+
+/// status: "pending" | "in_progress" | "done"
+model DevelopmentPlan {
+  id             String            @id @default(cuid())
+  cycleId        String
+  employeeId     String
+  employee       Employee          @relation(fields: [employeeId], references: [id])
+  ownerManagerId String
+  ownerManager   Employee          @relation("PlanManager", fields: [ownerManagerId], references: [id])
+  goals          DevelopmentGoal[]
+  createdAt      DateTime          @default(now())
+
+  @@unique([cycleId, employeeId])
+}
+
+model DevelopmentGoal {
+  id     String          @id @default(cuid())
+  planId String
+  plan   DevelopmentPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  text   String
+  dueAt  DateTime?
+  status String          @default("pending")
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorId      String
+  action       String
+  entity       String
+  entityId     String
+  metadataJson String?
+  createdAt    DateTime @default(now())
+}
