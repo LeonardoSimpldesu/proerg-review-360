@@ -55,6 +55,7 @@ export interface TemplateQuestionDto {
   text: string
   scaleMin: number | null
   scaleMax: number | null
+  options: string[] | null
   required: boolean
   order: number
 }
@@ -138,6 +139,38 @@ export interface EmployeeReportDto {
   cycleId: string
   competencies: CompetencyScore[]
   overallComments: string[]
+}
+
+// ─── Employee enriched ────────────────────────────────────────────────────────
+
+export interface EmployeeWithUserDto {
+  id: string
+  userId: string
+  jobTitle: string
+  teamId: string | null
+  managerId: string | null
+  user: Pick<UserDto, 'id' | 'name' | 'email'>
+}
+
+// ─── Assignment enriched ──────────────────────────────────────────────────────
+
+export interface ReviewAssignmentWithNamesDto extends ReviewAssignmentDto {
+  /** null when isAnonymous = true and caller is not admin */
+  reviewerName: string | null
+  revieweeName: string
+}
+
+export interface AssignmentDetailDto {
+  id: string
+  cycleId: string
+  cycleName: string
+  role: AssignmentRole
+  isAnonymous: boolean
+  status: AssignmentStatus
+  dueAt: string
+  revieweeName: string
+  template: ReviewTemplateDto
+  response: ReviewResponseDto | null
 }
 
 // ─── PDP ─────────────────────────────────────────────────────────────────────

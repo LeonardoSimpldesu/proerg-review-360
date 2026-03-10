@@ -61,6 +61,7 @@ model TemplateSection {
 }
 
 /// type: "rating" | "text" | "choice"
+/// options: JSON array string e.g. '["Sim","Não","Parcialmente"]' — used only when type = "choice"
 model TemplateQuestion {
   id        String          @id @default(cuid())
   sectionId String
@@ -69,6 +70,7 @@ model TemplateQuestion {
   text      String
   scaleMin  Int?
   scaleMax  Int?
+  options   String?
   required  Boolean         @default(true)
   order     Int
 }

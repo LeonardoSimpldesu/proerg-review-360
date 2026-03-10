@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify'
 import type { z } from 'zod'
 import type { createCycleSchema, paginationSchema, assignmentStatusQuerySchema } from '@reviews360/zod-schemas'
-import type { JwtPayload, PaginatedResult, ReviewCycleDetailDto, ReviewAssignmentDto } from '@reviews360/types'
+import type { JwtPayload, PaginatedResult, ReviewCycleDetailDto, ReviewAssignmentWithNamesDto } from '@reviews360/types'
 import { prisma } from '../lib/prisma.js'
 
 type CreateInput = z.infer<typeof createCycleSchema>
@@ -117,8 +117,7 @@ export class CycleService {
     cycleId: string,
     query: AssignmentQuery,
     actor: JwtPayload
-  ): Promise<PaginatedResult<ReviewAssignmentDto>> {
-    // Managers can only see assignments for their team members
+  ): Promise<PaginatedResult<ReviewAssignmentWithNamesDto>> {
     const where: Record<string, unknown> = {
       cycleId,
       ...(query.status && { status: query.status }),
@@ -134,16 +133,35 @@ export class CycleService {
       where['revieweeEmployeeId'] = { in: reports.map((r) => r.id) }
     }
 
-    const [data, total] = await prisma.$transaction([
+    const INCLUDE_NAMES = {
+      reviewer: { include: { user: { select: { name: true } } } },
+      reviewee: { include: { user: { select: { name: true } } } },
+    }
+
+    const [raw, total] = await prisma.$transaction([
       prisma.reviewAssignment.findMany({
         where,
         take: query.take,
         skip: query.skip,
         orderBy: { dueAt: 'asc' },
+        include: INCLUDE_NAMES,
       }),
       prisma.reviewAssignment.count({ where }),
     ])
 
-    return { data: data as unknown as ReviewAssignmentDto[], total, take: query.take, skip: query.skip }
+    const data: ReviewAssignmentWithNamesDto[] = raw.map((a) => ({
+      id: a.id,
+      cycleId: a.cycleId,
+      reviewerEmployeeId: a.isAnonymous && actor.role !== 'admin' ? '' : a.reviewerEmployeeId,
+      revieweeEmployeeId: a.revieweeEmployeeId,
+      role: a.role as ReviewAssignmentWithNamesDto['role'],
+      isAnonymous: a.isAnonymous,
+      status: a.status as ReviewAssignmentWithNamesDto['status'],
+      dueAt: a.dueAt.toISOString(),
+      reviewerName: a.isAnonymous && actor.role !== 'admin' ? null : a.reviewer.user.name,
+      revieweeName: a.reviewee.user.name,
+    }))
+
+    return { data, total, take: query.take, skip: query.skip }
   }
 }

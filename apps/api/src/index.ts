@@ -10,6 +10,7 @@ import { cycleRoutes } from './routes/cycles.js'
 import { assignmentRoutes } from './routes/assignments.js'
 import { reportRoutes } from './routes/reports.js'
 import { pdpRoutes } from './routes/pdp.js'
+import { employeeRoutes } from './routes/employees.js'
 import { registerJobs } from './jobs/notifications.js'
 
 const PORT = Number(process.env.PORT ?? 3001)
@@ -42,6 +43,7 @@ await app.register(cycleRoutes, { prefix: '/cycles' })
 await app.register(assignmentRoutes, { prefix: '/assignments' })
 await app.register(reportRoutes, { prefix: '/reports' })
 await app.register(pdpRoutes, { prefix: '/pdp' })
+await app.register(employeeRoutes, { prefix: '/employees' })
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get('/health', async () => ({ status: 'ok' }))

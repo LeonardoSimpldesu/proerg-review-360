@@ -33,9 +33,6 @@ Sistema web de avaliação de desempenho inspirado no Factorial HR. Substitui o 
 
 ```
 /
-├── opencode.json
-├── CONTEXT.md
-├── AGENTS.md
 ├── turbo.json
 ├── package.json
 ├── pnpm-workspace.yaml

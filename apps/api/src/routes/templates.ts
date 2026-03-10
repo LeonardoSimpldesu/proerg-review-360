@@ -3,6 +3,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import {
   createTemplateSchema,
   updateTemplateSchema,
+  toggleActiveSchema,
   idParamSchema,
   paginationSchema,
 } from '@reviews360/zod-schemas'
@@ -25,8 +26,7 @@ export async function templateRoutes(app: FastifyInstance): Promise<void> {
     preHandler: [app.authenticate],
     schema: { querystring: paginationSchema },
     handler: async (req, reply) => {
-      const result = await svc.findAll(req.query)
-      return reply.send(result)
+      return reply.send(await svc.findAll(req.query))
     },
   })
 
@@ -34,8 +34,7 @@ export async function templateRoutes(app: FastifyInstance): Promise<void> {
     preHandler: [app.authenticate],
     schema: { params: idParamSchema },
     handler: async (req, reply) => {
-      const template = await svc.findById(req.params.id)
-      return reply.send(template)
+      return reply.send(await svc.findById(req.params.id))
     },
   })
 
@@ -43,8 +42,15 @@ export async function templateRoutes(app: FastifyInstance): Promise<void> {
     preHandler: adminOnly,
     schema: { params: idParamSchema, body: updateTemplateSchema },
     handler: async (req, reply) => {
-      const template = await svc.update(req.params.id, req.body)
-      return reply.send(template)
+      return reply.send(await svc.update(req.params.id, req.body))
+    },
+  })
+
+  app.withTypeProvider<ZodTypeProvider>().patch('/:id/active', {
+    preHandler: adminOnly,
+    schema: { params: idParamSchema, body: toggleActiveSchema },
+    handler: async (req, reply) => {
+      return reply.send(await svc.toggleActive(req.params.id, req.body))
     },
   })
 }

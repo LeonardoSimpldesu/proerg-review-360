@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../lib/axios'
-import type { ReviewCycleDetailDto, ReviewAssignmentDto, PaginatedResult } from '@reviews360/types'
+import type { ReviewCycleDetailDto, ReviewAssignmentWithNamesDto, PaginatedResult } from '@reviews360/types'
 import type { z } from 'zod'
 import type { createCycleSchema } from '@reviews360/zod-schemas'
 
@@ -45,7 +45,7 @@ export function useCycleAssignments(cycleId: string, params?: { status?: string;
     queryKey: ['cycles', cycleId, 'assignments', params],
     queryFn: () =>
       api
-        .get<PaginatedResult<ReviewAssignmentDto>>(`/cycles/${cycleId}/assignments`, { params })
+        .get<PaginatedResult<ReviewAssignmentWithNamesDto>>(`/cycles/${cycleId}/assignments`, { params })
         .then((r) => r.data),
     enabled: !!cycleId,
   })

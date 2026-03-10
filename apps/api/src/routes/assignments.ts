@@ -1,11 +1,29 @@
 import type { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
-import { idParamSchema, saveResponseSchema, submitResponseSchema } from '@reviews360/zod-schemas'
+import { idParamSchema, saveResponseSchema, submitResponseSchema, assignmentStatusQuerySchema } from '@reviews360/zod-schemas'
 import { AssignmentService } from '../services/assignment.service.js'
 
 export async function assignmentRoutes(app: FastifyInstance): Promise<void> {
   const svc = new AssignmentService(app)
   const authenticated = [app.authenticate]
+
+  // List my assignments
+  app.withTypeProvider<ZodTypeProvider>().get('/', {
+    preHandler: authenticated,
+    schema: { querystring: assignmentStatusQuerySchema },
+    handler: async (req, reply) => {
+      return reply.send(await svc.findMyAssignments(req.user, req.query))
+    },
+  })
+
+  // Get assignment detail (with template questions + existing response)
+  app.withTypeProvider<ZodTypeProvider>().get('/:id', {
+    preHandler: authenticated,
+    schema: { params: idParamSchema },
+    handler: async (req, reply) => {
+      return reply.send(await svc.findById(req.params.id, req.user))
+    },
+  })
 
   // Save draft response
   app.withTypeProvider<ZodTypeProvider>().post('/:id/responses', {
