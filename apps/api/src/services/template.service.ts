@@ -14,6 +14,9 @@ const INCLUDE_FULL = {
     include: { questions: { orderBy: { order: 'asc' as const } } },
     orderBy: { order: 'asc' as const },
   },
+  _count: {
+    select: { cycles: { where: { status: { not: 'draft' as const } } } },
+  },
 }
 
 export class TemplateService {
@@ -133,6 +136,7 @@ export class TemplateService {
     version: number
     isActive: boolean
     createdAt: Date
+    _count?: { cycles: number }
     sections: Array<{
       id: string
       templateId: string
@@ -156,6 +160,7 @@ export class TemplateService {
       name: t.name,
       version: t.version,
       isActive: t.isActive,
+      isEditable: (t._count?.cycles ?? 0) === 0,
       createdAt: t.createdAt.toISOString(),
       sections: t.sections.map((s) => ({
         id: s.id,

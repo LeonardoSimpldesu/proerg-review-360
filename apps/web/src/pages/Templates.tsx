@@ -127,7 +127,8 @@ export function TemplatesPage(): JSX.Element {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8"
-                            title="Editar"
+                            title={template.isEditable ? 'Editar' : 'Não é possível editar: template vinculado a um ciclo ativo'}
+                            disabled={!template.isEditable}
                             onClick={() => openEdit(template)}
                           >
                             <Pencil className="h-4 w-4" />

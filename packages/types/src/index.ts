@@ -73,6 +73,7 @@ export interface ReviewTemplateDto {
   name: string
   version: number
   isActive: boolean
+  isEditable: boolean
   sections: TemplateSectionDto[]
   createdAt: string
 }

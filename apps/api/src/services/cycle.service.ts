@@ -14,6 +14,7 @@ export class CycleService {
   async create(input: CreateInput, actorId: string): Promise<ReviewCycleDetailDto> {
     const template = await prisma.reviewTemplate.findUnique({ where: { id: input.templateId } })
     if (!template) throw this.app.httpErrors.notFound('Template not found')
+    if (!template.isActive) throw this.app.httpErrors.conflict('Cannot create a cycle with an inactive template')
 
     const cycle = await prisma.$transaction(async (tx) => {
       const c = await tx.reviewCycle.create({

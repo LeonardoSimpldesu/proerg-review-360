@@ -18,6 +18,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
+import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 
 type FormValues = z.infer<typeof createTemplateSchema>
@@ -203,6 +204,21 @@ function QuestionFields({
                     return <></>
                   }}
                 />
+
+                {/* Required toggle */}
+                <Controller
+                  control={control}
+                  name={`sections.${sectionIndex}.questions.${qi}.required`}
+                  render={({ field }) => (
+                    <label className="flex items-center gap-2 cursor-pointer w-fit">
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                      <span className="text-xs text-muted-foreground">Obrigatória</span>
+                    </label>
+                  )}
+                />
               </div>
             </div>
           </div>
@@ -230,6 +246,8 @@ export function TemplateFormModal({ open, onClose, template }: Props): JSX.Eleme
   const createMutation = useCreateTemplate()
   const updateMutation = useUpdateTemplate()
   const isPending = createMutation.isPending || updateMutation.isPending
+  const mutationError = (createMutation.error ?? updateMutation.error) as { response?: { data?: { message?: string } } } | null
+  const errorMessage = mutationError?.response?.data?.message ?? null
 
   const {
     register,
@@ -247,8 +265,11 @@ export function TemplateFormModal({ open, onClose, template }: Props): JSX.Eleme
     name: 'sections',
   })
 
-  // Populate form when editing
+  // Populate form when editing; clear mutation errors on every open
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
+    createMutation.reset()
+    updateMutation.reset()
     if (template) {
       reset({
         name: template.name,
@@ -371,6 +392,9 @@ export function TemplateFormModal({ open, onClose, template }: Props): JSX.Eleme
           </div>
 
           <DialogFooter>
+            {errorMessage && (
+              <p className="text-sm text-destructive mr-auto">{errorMessage}</p>
+            )}
             <Button type="button" variant="outline" onClick={onClose} disabled={isPending}>
               Cancelar
             </Button>
