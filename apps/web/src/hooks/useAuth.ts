@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { api } from '../lib/axios'
 import { useAuthStore } from '../stores/auth.store'
@@ -29,9 +29,11 @@ export function useLogin() {
 export function useLogout() {
   const { logout } = useAuthStore()
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   return () => {
     logout()
+    queryClient.clear()
     navigate('/login')
   }
 }

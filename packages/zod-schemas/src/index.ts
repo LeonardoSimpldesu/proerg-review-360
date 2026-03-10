@@ -25,6 +25,7 @@ export const createQuestionSchema = z.object({
   text: z.string().min(1).max(500),
   scaleMin: z.number().int().optional(),
   scaleMax: z.number().int().optional(),
+  options: z.array(z.string().min(1).max(200)).min(2).max(10).optional(),
   required: z.boolean().default(true),
   order: z.number().int().min(0),
 })
@@ -41,6 +42,10 @@ export const createTemplateSchema = z.object({
 })
 
 export const updateTemplateSchema = createTemplateSchema.partial()
+
+export const toggleActiveSchema = z.object({
+  isActive: z.boolean(),
+})
 
 // ─── Cycles ──────────────────────────────────────────────────────────────────
 
@@ -64,7 +69,7 @@ export const createCycleSchema = z.object({
 
 export const saveAnswerSchema = z.object({
   questionId: z.string().cuid(),
-  ratingValue: z.number().int().min(1).max(5).optional(),
+  ratingValue: z.number().int().min(1).max(100).optional(),
   textValue: z.string().max(2000).optional(),
 })
 
